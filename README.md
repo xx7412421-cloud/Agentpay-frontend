@@ -108,9 +108,36 @@ A baseline security header set (CSP, `X-Frame-Options: DENY`, `Referrer-Policy`,
 
 The `/events` page renders server-supplied JSON payloads. Each payload is serialised through `safeStringify` (`src/lib/format.ts`) with a hard cap (`EVENT_PAYLOAD_MAX_CHARS`, default 5,000 chars) and a visible `…(truncated)` marker. Circular references, `BigInt`, functions, and malformed timestamps are replaced with safe sentinels so a bad payload can't crash the page.
 
-## Accessibility
+## Document titles
 
-AgentPay respects `prefers-reduced-motion: reduce` globally. Continuous loading animations such as spinner rotation and skeleton pulsing are disabled for users who request reduced motion, while the spinner keeps its `role="status"` live region and screen-reader loading label.
+The root layout keeps the home route on the default `AgentPay` title and applies the template `"%s — AgentPay"` to route-specific titles.
+
+| Route | Title |
+|-------|-------|
+| `/` | `AgentPay` |
+| `/services` | `Services` |
+| `/services/new` | `New service` |
+| `/usage` | `Usage metering` |
+| `/agents` | `Agents` |
+| `/admin` | `Admin` |
+| `/stats` | `Stats` |
+| `/events` | `Event log` |
+| `/webhooks` | `Webhooks` |
+| `/api-keys` | `API keys` |
+| `/search` | `Search` |
+| `/services/[serviceId]` | `Service {serviceId}` |
+| `/services/[serviceId]/edit` | `Edit service {serviceId}` |
+| `/services/[serviceId]/agents` | `Top agents {serviceId}` |
+| `/agents/[agent]` | `Agent {agent}` |
+
+## Services list paging
+
+The `/services` page now uses server-driven pagination with the shared `Spinner`, `EmptyState`, and `Pagination` components.
+
+- Requests are sent as `GET /api/v1/services?page=N&limit=25`.
+- The page assumes the backend returns a paged payload with `services` or `items`, plus `page` and `pageCount`.
+- If the backend clamps an out-of-range request, the UI follows the server-provided `page` and `pageCount` so the visible indicator stays in sync.
+- Service rows link through to `/services/:serviceId` using encoded IDs.
 
 ## Commands
 

@@ -34,19 +34,22 @@ function reducer<T>(_state: State<T>, action: Action<T>): State<T> {
  * return <EventList items={state.data.items} />;
  */
 export function useApi<T>(path: string | null): State<T> {
-  const [state, dispatch] = useReducer(reducer<T>, { status: "loading" });
+  const [state, dispatch] = useReducer(
+    (_state: State<T>, action: State<T>) => action,
+    { status: "loading" } as State<T>
+  );
 
   useEffect(() => {
     if (path === null) return;
     let cancelled = false;
-    dispatch({ type: "loading" });
+    dispatch({ status: "loading" });
     apiGet<T>(path)
-      .then((data) => !cancelled && dispatch({ type: "ok", data }))
+      .then((data) => !cancelled && dispatch({ status: "ok", data }))
       .catch(
         (e) =>
           !cancelled &&
           dispatch({
-            type: "error",
+            status: "error",
             error: (e as Error).message ?? "failed to load",
           })
       );
